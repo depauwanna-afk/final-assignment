@@ -23,3 +23,19 @@ main {
   font-weight: 400;
   margin: 0;
 }
+#name-form label {
+  display: block;
+  font-size: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+#name-input {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid white;
+  color: white;
+  font-size: 2rem;
+  text-align: center;
+  outline: none;
+  width: 300px;
+}
