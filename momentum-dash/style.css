@@ -39,3 +39,52 @@ main {
   outline: none;
   width: 300px;
 }
+#todo {
+  position: fixed;   /* stays in place, outside the centred layout */
+  bottom: 20px;
+  right: 20px;
+  width: 280px;
+  padding: 1rem;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.4);  /* semi-transparent black */
+}
+
+#todo h3 {
+  margin: 0 0 0.5rem;
+}
+
+#todo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.5rem;
+}
+
+#todo-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+#todo-list li.done span {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+#todo-list button {
+  margin-left: auto;   /* pushes the delete button to the right */
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+#todo-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid white;
+  color: white;
+  font-size: 1rem;
+  outline: none;
+}
