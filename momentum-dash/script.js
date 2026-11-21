@@ -117,3 +117,34 @@ todoForm.addEventListener("submit", function (event) {
 });
 
 renderTodos();   // show saved to-dos when the page opens
+// ===== Background image (data from the Lorem Picsum API) =====
+const photoCredit = document.getElementById("photo-credit");
+
+async function loadBackground() {
+  try {
+    // Ask the API for a list of 30 photos from a random page (1-10)
+    const page = Math.floor(Math.random() * 10) + 1;
+    const response = await fetch(`https://picsum.photos/v2/list?page=${page}&limit=30`);
+
+    if (!response.ok) {
+      throw new Error(`API returned status ${response.status}`);
+    }
+
+    const photos = await response.json();   // turn the JSON text into an array
+    const photo = photos[Math.floor(Math.random() * photos.length)];
+
+    // Request the chosen photo at screen size (the originals are huge)
+    const imageUrl = `https://picsum.photos/id/${photo.id}/1920/1080`;
+
+    // A semi-transparent dark layer on top of the photo keeps the text readable
+    document.body.style.backgroundImage =
+      `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url("${imageUrl}")`;
+
+    photoCredit.textContent = `Photo by ${photo.author}`;
+  } catch (error) {
+    // If anything fails, keep the plain background colour from style.css
+    console.error("Could not load background image:", error);
+  }
+}
+
+loadBackground();
