@@ -8,3 +8,18 @@ body {
   color: white;
   font-family: system-ui, sans-serif;
 }
+main {
+  text-align: center;
+}
+
+#time {
+  font-size: 8rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+#greeting {
+  font-size: 2.5rem;
+  font-weight: 400;
+  margin: 0;
+}
