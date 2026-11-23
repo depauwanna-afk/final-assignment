@@ -32,7 +32,7 @@ Data is saved with the browser's `localStorage`, under two keys:
 | `userName` | The user's name | Text |
 | `todos` | The to-do list | JSON array, e.g. `[{"text":"Gym","done":false}]` |
 
-**Where:** in Chrome's local storage for this extension, on this computer and Chrome profile only. Nothing is sent to a server.
+**Where:** in Chrome's local storage for this extension, on this computer and Chrome profile only. The name and to-do items are never sent anywhere. The only network requests are to Lorem Picsum to load the background photo; like any website, Picsum receives standard request information (such as your IP address), but none of your saved data.
 
 **Why `localStorage`:** 
 Chrome extension store lightweight data which is handled well by local storages. No server or database is needed as the extension is directly on the computer and does not require any identifications/external accesses.
@@ -80,7 +80,7 @@ After changing the code, open a new tab to see changes. After changing `manifest
 - **How JavaScript changes the page.** The HTML only provides empty "slots" with ids (like `id="time"`). JavaScript finds them with `getElementById` and fills them by setting `textContent`. The clock uses `setInterval` to run every second, and I call the function once first so the page doesn't show `00:00` for a second.
 - **How to save data in the browser.** `localStorage` keeps data even after Chrome is closed, but it can only store text. To save my to-do list (an array of objects), I convert it with `JSON.stringify` and turn it back with `JSON.parse`. I could see both saved keys, `userName` and `todos`, in DevTools → Application → Local storage.
 - **How to get data from an API.** I used `fetch` with `async`/`await` to get a list of photos from the Lorem Picsum API as JSON. I wrapped it in `try`/`catch` and tested it with DevTools set to "Offline": the photo fails, but the rest of the page keeps working.
-- **A basic security rule.** Text typed by a user (or coming from an API) should be inserted with `textContent`, not `innerHTML`. I tested this by adding the to-do `<b>hello</b>`: it appeared as plain text and not in bold, which shows the browser isn't running user input as code. With `innerHTML`, someone could inject JavaScript (an XSS attack).
+- **A basic security rule.** Text typed by a user (or coming from an API) should be inserted with `textContent`, not `innerHTML`. I tested this by adding the to-do `<b>hello</b>`: it appeared as plain text and not in bold, which shows the browser isn't running user input as code. With `innerHTML`, the browser would parse the text as HTML, so untrusted input could inject code that runs on the page (an XSS attack).
 - **Using my tools.** The DevTools Console is the first place to look when something doesn't work. I also learned that Git and Chrome only read files *saved* to disk: twice something "didn't work" simply because a file wasn't saved (a white dot on the VS Code tab).
 
 ### A challenge I encountered and how I approached it
@@ -94,7 +94,6 @@ What I took from this:
 - "X is not defined" means a missing variable in the JavaScript, while "Cannot set properties of null" means the variable exists but the element wasn't found in the HTML.
 - Read the full error message before guessing, and clear old errors in Chrome, because it keeps showing them even after they're fixed.
 
-## Limitations and assistance
 
 ## Limitations and assistance
 
