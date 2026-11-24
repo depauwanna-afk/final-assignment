@@ -1,7 +1,10 @@
+import os
 import time
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+from dotenv import load_dotenv
+from supabase import create_client
 
 
 BASE_URL = "https://books.toscrape.com/"
@@ -77,14 +80,34 @@ def scrape_all_books():
             time.sleep(DELAY_SECONDS)
 
     return all_books
+def save_to_supabase(books):
+    """Upsert all books into the Supabase 'books' table (url is the unique key)."""
+    load_dotenv()   # read SUPABASE_URL and SUPABASE_SECRET_KEY from the .env file
+    url = os.environ.get("SUPABASE_URL")
+    key = os.environ.get("SUPABASE_SECRET_KEY")
 
+    if not url or not key:
+        raise SystemExit(
+            "Missing SUPABASE_URL or SUPABASE_SECRET_KEY. "
+            "Copy .env.example to .env and fill in your own values."
+        )
+
+    supabase = create_client(url, key)
+
+    batch_size = 500
+    for start in range(0, len(books), batch_size):
+        batch = books[start:start + batch_size]
+        supabase.table("books").upsert(batch, on_conflict="url").execute()
+        print(f"Saved books {start + 1}-{start + len(batch)} to Supabase")
 
 if __name__ == "__main__":
     all_books = scrape_all_books()
 
-    # Checks
+    # Checks before saving
     print(f"Done: scraped {len(all_books)} books")
     unique_urls = {book["url"] for book in all_books}
     print(f"Unique URLs: {len(unique_urls)}")
-    print("Last book:", all_books[-1])
+
+    save_to_supabase(all_books)
+    print("All books saved to Supabase")
 
