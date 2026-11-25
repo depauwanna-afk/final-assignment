@@ -27,3 +27,6 @@ desktop.ini
 
 # --- Logs ---
 *.log
+
+# --- Streamlit local secrets (if the app is ever deployed) ---
+.streamlit/secrets.toml
