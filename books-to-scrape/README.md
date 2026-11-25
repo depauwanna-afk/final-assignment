@@ -43,7 +43,7 @@ books.toscrape.com  →  scraper.py  →  Supabase (books table)  →  app.py (S
 
 - **What:** one table, `books`, with the five fields above plus an automatic `id` and `created_at`. The table definition, including its security rules, is in [`schema.sql`](schema.sql).
 - **Where:** a hosted PostgreSQL database on [Supabase](https://supabase.com).
-- **Why Supabase / a database:** - **Why Supabase / a database:** Supabase was the database required for this course. Using it also made sense for the project: the scraped data has to outlive the script (a Python list disappears when the program ends), so the interface can show it without re-scraping the website every time. A database table also enforces fixed column types and rules (for example, a rating must be between 1 and 5, and each URL can appear only once), and it lets the scraper and the interface share the same data while having different permissions: the scraper can write, and the interface can only read.
+- **Why Supabase / a database:** Supabase was the database required for this course. Using it also made sense for the project: the scraped data has to outlive the script (a Python list disappears when the program ends), so the interface can show it without re-scraping the website every time. A database table also enforces fixed column types and rules (for example, a rating must be between 1 and 5, and each URL can appear only once), and it lets the scraper and the interface share the same data while having different permissions: the scraper can write, and the interface can only read.
 - **No duplicates:** `url` is `unique` in the table, and the scraper uses an **upsert** (`on_conflict="url"`): existing books are updated, new ones inserted. Running the scraper twice still leaves exactly 1,000 rows.
 
 ![Row count after two scraper runs](screenshots/supabase-count.png)
@@ -77,7 +77,7 @@ The keys are stored only in a local `.env` file, which is excluded by `.gitignor
 
 ## Setup
 
-**Requirements:** Python 3.9 or newer (developed with 3.14), a free [Supabase](https://supabase.com) account, and an internet connection.
+**Requirements:** Python 3 (developed and tested with 3.14), a free [Supabase](https://supabase.com) account, and an internet connection.
 
 1. **Clone the repository** and go into this folder:
    ```bash
