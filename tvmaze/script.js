@@ -8,7 +8,8 @@ const formMessage = document.getElementById("form-message");
 const searchForm = document.getElementById("search-form");
 const searchInput = document.getElementById("search-input");
 const resultsSection = document.getElementById("search-results");
-
+const favouritesSection = document.getElementById("favourites");
+const FAVOURITES_KEY = "favourites";
 
 // ---------- Helpers ----------
 
@@ -37,6 +38,82 @@ function channelName(show) {
   return show.network?.name ?? show.webChannel?.name ?? "Unknown channel";
 }
 
+// ---------- Favourites (saved in localStorage) ----------
+
+// Load favourites; ignore anything corrupted or edited by hand
+function loadFavourites() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(FAVOURITES_KEY)) ?? [];
+    return Array.isArray(saved)
+      ? saved.filter(fav => Number.isInteger(fav?.id) && typeof fav.name === "string")
+      : [];
+  } catch {
+    return [];   // not valid JSON: start fresh
+  }
+}
+
+function saveFavourites(favourites) {
+  localStorage.setItem(FAVOURITES_KEY, JSON.stringify(favourites));
+}
+
+function isFavourite(id) {
+  return loadFavourites().some(fav => fav.id === id);
+}
+
+// Add the show if it is not a favourite yet, otherwise remove it
+function toggleFavourite(show) {
+  let favourites = loadFavourites();
+  if (isFavourite(show.id)) {
+    favourites = favourites.filter(fav => fav.id !== show.id);
+  } else {
+    favourites.push({ id: show.id, name: show.name, image: show.image?.medium ?? null });
+  }
+  saveFavourites(favourites);
+  renderFavourites();
+}
+
+// Show the saved favourites as cards (no API calls needed)
+function renderFavourites() {
+  const favourites = loadFavourites();
+  favouritesSection.innerHTML = "";   // clear (no stored text involved)
+  favouritesSection.append(makeElement("h2", `My favourites (${favourites.length})`));
+
+  if (favourites.length === 0) {
+    favouritesSection.append(makeElement("p", "No favourites yet. Open a show and click ☆ Add to favourites."));
+    return;
+  }
+
+  const grid = makeElement("div");
+  grid.className = "card-grid";
+
+  for (const fav of favourites) {
+    const card = makeElement("a");
+    card.className = "show-card";
+    card.href = `?id=${fav.id}`;
+
+    if (fav.image) {
+      const poster = makeElement("img");
+      poster.src = fav.image;
+      poster.alt = `Poster of ${fav.name}`;
+      card.append(poster);
+    } else {
+      const placeholder = makeElement("div", "No image");
+      placeholder.className = "no-image";
+      card.append(placeholder);
+    }
+    card.append(makeElement("strong", fav.name));
+
+    card.addEventListener("click", function (event) {
+      event.preventDefault();
+      openShow(String(fav.id));
+      detailsSection.scrollIntoView({ behavior: "smooth" });
+    });
+
+    grid.append(card);
+  }
+
+  favouritesSection.append(grid);
+}
 
 // ---------- 1. GET ----------
 
@@ -106,7 +183,21 @@ function renderShow(show) {
   const idNote = makeElement("p", `TVmaze ID: ${show.id}`);
   idNote.className = "show-meta";
   info.append(idNote);
+  // Favourite button: text changes depending on whether the show is saved
+  const favButton = makeElement("button");
+  favButton.className = "fav-button";
+  function updateFavButton() {
+    favButton.textContent = isFavourite(show.id) ? "★ Remove from favourites" : "☆ Add to favourites";
+  }
+  updateFavButton();
+  favButton.addEventListener("click", function () {
+    toggleFavourite(show);
+    updateFavButton();
+  });
+  info.append(favButton);
 
+  layout.append(info);
+  detailsSection.append(layout);
   layout.append(info);
   detailsSection.append(layout);
 
@@ -303,5 +394,6 @@ window.addEventListener("popstate", function () {
   loadShow(getIdFromUrl());
 });
 
-// On page load: open the show from the address (or the default)
+// On page load: show the favourites, then open the show from the address (or the default)
+renderFavourites();
 loadShow(getIdFromUrl());

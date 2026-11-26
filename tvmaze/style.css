@@ -181,3 +181,24 @@ th {
   font-size: 0.85rem;
   opacity: 0.75;
 }
+/* Favourites */
+#favourites {
+  margin: 1.5rem 0 2rem;
+}
+
+.fav-button {
+  display: block;
+  margin: 1rem 0;
+  font-size: 1rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #facc15;
+  background: transparent;
+  color: #facc15;
+  cursor: pointer;
+}
+
+.fav-button:hover {
+  background: #facc15;
+  color: #0f172a;
+}
