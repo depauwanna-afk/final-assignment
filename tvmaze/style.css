@@ -30,3 +30,61 @@ footer {
   border-top: 1px solid #334155;
   margin-top: 2rem;
 }
+
+/* ID form */
+#id-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+#id-form input,
+#id-form button {
+  font-size: 1rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #334155;
+}
+
+#id-form input {
+  background: #1e293b;
+  color: #e2e8f0;
+  width: 8rem;
+}
+
+#id-form button {
+  background: #38bdf8;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+#form-message {
+  width: 100%;
+  margin: 0;
+  color: #f87171;
+}
+
+/* Details layout: poster left, information right */
+.show-layout {
+  display: grid;
+  grid-template-columns: 210px 1fr;
+  gap: 1.5rem;
+}
+
+.show-layout img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.show-meta {
+  opacity: 0.8;
+}
+
+/* On narrow screens, stack poster and text */
+@media (max-width: 600px) {
+  .show-layout {
+    grid-template-columns: 1fr;
+  }
+}
