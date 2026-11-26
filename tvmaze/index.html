@@ -13,12 +13,20 @@
   </header>
 
   <main>
-    <form id="id-form">
+    <form id="search-form" class="inline-form">
+      <label for="search-input">Search by name</label>
+      <input id="search-input" type="search" placeholder="e.g. office" autocomplete="off">
+      <button type="submit">Search</button>
+    </form>
+
+    <form id="id-form" class="inline-form">
       <label for="id-input">Show ID</label>
       <input id="id-input" type="text" inputmode="numeric" placeholder="e.g. 431" autocomplete="off">
       <button type="submit">Open show</button>
       <p id="form-message"></p>
     </form>
+
+    <section id="search-results"></section>
 
     <section id="show-details">
       <p>Loading…</p>

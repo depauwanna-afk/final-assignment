@@ -5,6 +5,9 @@ const detailsSection = document.getElementById("show-details");
 const idForm = document.getElementById("id-form");
 const idInput = document.getElementById("id-input");
 const formMessage = document.getElementById("form-message");
+const searchForm = document.getElementById("search-form");
+const searchInput = document.getElementById("search-input");
+const resultsSection = document.getElementById("search-results");
 
 
 // ---------- Helpers ----------
@@ -29,6 +32,11 @@ function makeElement(tag, text) {
   return element;
 }
 
+// The TV network or streaming service of a show
+function channelName(show) {
+  return show.network?.name ?? show.webChannel?.name ?? "Unknown channel";
+}
+
 
 // ---------- 1. GET ----------
 
@@ -38,6 +46,16 @@ async function fetchShow(id) {
     throw new Error(`TVmaze returned status ${response.status}`);
   }
   return response.json();
+}
+
+// Search by name: returns a list of shows (TVmaze gives at most 10)
+async function searchShows(query) {
+  const response = await fetch(`${API_BASE}/search/shows?q=${encodeURIComponent(query)}`);
+  if (!response.ok) {
+    throw new Error(`TVmaze returned status ${response.status}`);
+  }
+  const results = await response.json();      // [{ score, show }, ...]
+  return results.map(result => result.show);  // keep only the shows
 }
 
 
@@ -68,9 +86,8 @@ function renderShow(show) {
   // Years, e.g. "1994–2004" or "2019–present"
   const start = show.premiered ? show.premiered.slice(0, 4) : "?";
   const end = show.ended ? show.ended.slice(0, 4) : "present";
-  const channel = show.network?.name ?? show.webChannel?.name ?? "Unknown channel";
   const runtime = show.averageRuntime ? `${show.averageRuntime} min` : "runtime unknown";
-  const meta = makeElement("p", `${start}–${end} · ${channel} · ${show.language ?? "Unknown language"} · ${runtime}`);
+  const meta = makeElement("p", `${start}–${end} · ${channelName(show)} · ${show.language ?? "Unknown language"} · ${runtime}`);
   meta.className = "show-meta";
   info.append(meta);
 
@@ -92,6 +109,54 @@ function renderShow(show) {
 
   layout.append(info);
   detailsSection.append(layout);
+}
+
+// One clickable card for a search result
+function makeShowCard(show) {
+  const card = makeElement("a");
+  card.className = "show-card";
+  card.href = `?id=${show.id}`;   // a real link: Ctrl+click opens it in a new tab
+
+  if (show.image) {
+    const poster = makeElement("img");
+    poster.src = show.image.medium;
+    poster.alt = `Poster of ${show.name}`;
+    card.append(poster);
+  } else {
+    const placeholder = makeElement("div", "No image");
+    placeholder.className = "no-image";
+    card.append(placeholder);
+  }
+
+  const year = show.premiered ? show.premiered.slice(0, 4) : "?";
+  card.append(makeElement("strong", show.name));
+  card.append(makeElement("span", `${year} · ${channelName(show)}`));
+
+  // A normal click opens the show inside the page
+  card.addEventListener("click", function (event) {
+    event.preventDefault();
+    openShow(String(show.id));
+    detailsSection.scrollIntoView({ behavior: "smooth" });
+  });
+
+  return card;
+}
+
+function renderResults(shows, query) {
+  resultsSection.innerHTML = "";   // clear (no API text involved)
+
+  if (shows.length === 0) {
+    resultsSection.append(makeElement("p", `No shows found for "${query}".`));
+    return;
+  }
+
+  resultsSection.append(makeElement("h2", `Results for "${query}"`));
+  const grid = makeElement("div");
+  grid.className = "card-grid";
+  for (const show of shows) {
+    grid.append(makeShowCard(show));
+  }
+  resultsSection.append(grid);
 }
 
 
@@ -126,7 +191,26 @@ function openShow(id) {
 
 // ---------- Events ----------
 
-// The ID form: digits only
+// Search form
+searchForm.addEventListener("submit", async function (event) {
+  event.preventDefault();
+  const query = searchInput.value.trim();
+  if (query === "") {
+    resultsSection.textContent = "Please type a show name.";
+    return;
+  }
+
+  resultsSection.textContent = "Searching…";
+  try {
+    const shows = await searchShows(query);
+    renderResults(shows, query);
+  } catch (error) {
+    console.error(error);
+    resultsSection.textContent = "Sorry, the search failed. Please try again.";
+  }
+});
+
+// ID form: digits only
 idForm.addEventListener("submit", function (event) {
   event.preventDefault();
   const id = idInput.value.trim();
