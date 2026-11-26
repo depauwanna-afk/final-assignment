@@ -140,3 +140,44 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+
+/* Seasons and cast */
+.extra-section {
+  margin-top: 2rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid #334155;
+}
+
+th {
+  opacity: 0.8;
+}
+
+.cast-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: #1e293b;
+}
+
+.cast-card img {
+  width: 100%;
+  aspect-ratio: 210 / 295;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.cast-card span {
+  font-size: 0.85rem;
+  opacity: 0.75;
+}

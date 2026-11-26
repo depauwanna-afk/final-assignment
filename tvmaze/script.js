@@ -41,7 +41,7 @@ function channelName(show) {
 // ---------- 1. GET ----------
 
 async function fetchShow(id) {
-  const response = await fetch(`${API_BASE}/shows/${id}`);
+    const response = await fetch(`${API_BASE}/shows/${id}?embed[]=seasons&embed[]=cast`);
   if (!response.ok) {
     throw new Error(`TVmaze returned status ${response.status}`);
   }
@@ -109,6 +109,82 @@ function renderShow(show) {
 
   layout.append(info);
   detailsSection.append(layout);
+
+  // Extra data from the same request (embed)
+  detailsSection.append(renderSeasons(show._embedded?.seasons ?? []));
+  detailsSection.append(renderCast(show._embedded?.cast ?? []));
+}
+
+// Seasons table: number, episode count, air dates
+function renderSeasons(seasons) {
+  const section = makeElement("section");
+  section.className = "extra-section";
+  section.append(makeElement("h3", `Seasons (${seasons.length})`));
+
+  if (seasons.length === 0) {
+    section.append(makeElement("p", "No season information available."));
+    return section;
+  }
+
+  const table = makeElement("table");
+  const headerRow = makeElement("tr");
+  for (const heading of ["Season", "Episodes", "Aired"]) {
+    headerRow.append(makeElement("th", heading));
+  }
+  table.append(headerRow);
+
+  for (const season of seasons) {
+    const row = makeElement("tr");
+    const label = season.name ? `Season ${season.number} – ${season.name}` : `Season ${season.number}`;
+    row.append(makeElement("td", label));
+    row.append(makeElement("td", season.episodeOrder ?? "?"));
+    row.append(makeElement("td", `${season.premiereDate ?? "?"} → ${season.endDate ?? "?"}`));
+    table.append(row);
+  }
+
+  section.append(table);
+  return section;
+}
+
+// Cast grid: photo, actor name, character (first 12 only)
+function renderCast(cast) {
+  const section = makeElement("section");
+  section.className = "extra-section";
+  section.append(makeElement("h3", "Cast"));
+
+  if (cast.length === 0) {
+    section.append(makeElement("p", "No cast information available."));
+    return section;
+  }
+
+  const grid = makeElement("div");
+  grid.className = "card-grid";
+
+  for (const member of cast.slice(0, 12)) {
+    const card = makeElement("div");
+    card.className = "cast-card";
+
+    if (member.person.image) {
+      const photo = makeElement("img");
+      photo.src = member.person.image.medium;
+      photo.alt = member.person.name;
+      card.append(photo);
+    } else {
+      const placeholder = makeElement("div", "No photo");
+      placeholder.className = "no-image";
+      card.append(placeholder);
+    }
+
+    card.append(makeElement("strong", member.person.name));
+    card.append(makeElement("span", `as ${member.character.name}`));
+    grid.append(card);
+  }
+
+  section.append(grid);
+  if (cast.length > 12) {
+    section.append(makeElement("p", `Showing 12 of ${cast.length} cast members.`));
+  }
+  return section;
 }
 
 // One clickable card for a search result
