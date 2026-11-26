@@ -117,22 +117,46 @@ function renderFavourites() {
 
 // ---------- 1. GET ----------
 
-async function fetchShow(id) {
-    const response = await fetch(`${API_BASE}/shows/${id}?embed[]=seasons&embed[]=cast`);
+// Every request goes through here, so all errors are handled the same way
+async function fetchJson(url) {
+  let response;
+  try {
+    response = await fetch(url);
+  } catch {
+    // fetch itself failed: no internet, or TVmaze could not be reached
+    throw new Error("offline");
+  }
   if (!response.ok) {
-    throw new Error(`TVmaze returned status ${response.status}`);
+    const error = new Error(`TVmaze returned status ${response.status}`);
+    error.status = response.status;   // e.g. 404 or 429
+    throw error;
   }
   return response.json();
 }
 
+// One specific series by its ID, with its seasons and cast in the same request
+async function fetchShow(id) {
+  return fetchJson(`${API_BASE}/shows/${id}?embed[]=seasons&embed[]=cast`);
+}
+
 // Search by name: returns a list of shows (TVmaze gives at most 10)
 async function searchShows(query) {
-  const response = await fetch(`${API_BASE}/search/shows?q=${encodeURIComponent(query)}`);
-  if (!response.ok) {
-    throw new Error(`TVmaze returned status ${response.status}`);
+  const results = await fetchJson(`${API_BASE}/search/shows?q=${encodeURIComponent(query)}`);
+  return results.map(result => result.show);   // keep only the shows
+}
+
+// Turn an error into a message the user can act on
+function errorMessage(error) {
+  if (error.message === "offline") {
+    return "Can't reach TVmaze. Please check your internet connection.";
   }
-  const results = await response.json();      // [{ score, show }, ...]
-  return results.map(result => result.show);  // keep only the shows
+  if (error.status === 404) {
+    return "TVmaze has no show with this ID.";
+  }
+  if (error.status === 429) {
+    return "Too many requests to TVmaze. Please wait a few seconds and try again.";
+  }
+  return "Something went wrong while contacting TVmaze. Please try again.";
 }
 
 
@@ -336,7 +360,7 @@ async function loadShow(id) {
     renderShow(show);
   } catch (error) {
     console.error(error);
-    detailsSection.textContent = `Sorry, no show could be loaded for ID ${id}.`;
+        detailsSection.textContent = `${errorMessage(error)} (ID ${id})`;
   }
 }
 
@@ -367,13 +391,17 @@ searchForm.addEventListener("submit", async function (event) {
     return;
   }
 
+   const searchButton = searchForm.querySelector("button");
+  searchButton.disabled = true;           // no double-clicks while searching
   resultsSection.textContent = "Searching…";
   try {
     const shows = await searchShows(query);
     renderResults(shows, query);
   } catch (error) {
     console.error(error);
-    resultsSection.textContent = "Sorry, the search failed. Please try again.";
+    resultsSection.textContent = errorMessage(error);
+  } finally {
+    searchButton.disabled = false;        // always re-enable, success or failure
   }
 });
 

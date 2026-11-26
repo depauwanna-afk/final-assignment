@@ -202,3 +202,8 @@ th {
   background: #facc15;
   color: #0f172a;
 }
+
+.inline-form button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
